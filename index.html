@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="uk" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<style>:root{color-scheme:dark}body{margin:0;font-size:14px}[hidden]{display:none!important}img{max-width:100%}</style>
+<title>Списання бонусів ДК</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: документ-специфікація зверху, під ним робочий макет APEX-сторінки (2 панелі), далі правила, дані, SQL, питання */
+:root{
+  --bg:#f3f5f8; --surface:#ffffff; --surface-2:#eef1f6; --line:#d6dce6;
+  --fg:#1d2733; --muted:#5d6b7c; --accent:#2f5d8c; --accent-fg:#ffffff;
+  --head:#3c4b5e; --head-fg:#ffffff;
+  --active:#d9822b; --pending:#3f8f5a;
+  --danger:#b3362c; --danger-bg:#fbe9e7; --ok:#2e7d4f; --ok-bg:#e6f4ec; --warn:#8a6100; --warn-bg:#fff4d6;
+  --font-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141a21; --surface:#1c232c; --surface-2:#242d38; --line:#334050;
+  --fg:#e3e8ef; --muted:#9aa8b8; --accent:#7fb0e0; --accent-fg:#0f1720;
+  --head:#2a3644; --head-fg:#e3e8ef;
+  --active:#e59a4c; --pending:#5fb37b;
+  --danger:#f08a7e; --danger-bg:#3a201d; --ok:#6fcf97; --ok-bg:#16301f; --warn:#f0c55a; --warn-bg:#352b10;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141a21; --surface:#1c232c; --surface-2:#242d38; --line:#334050;
+  --fg:#e3e8ef; --muted:#9aa8b8; --accent:#7fb0e0; --accent-fg:#0f1720;
+  --head:#2a3644; --head-fg:#e3e8ef;
+  --active:#e59a4c; --pending:#5fb37b;
+  --danger:#f08a7e; --danger-bg:#3a201d; --ok:#6fcf97; --ok-bg:#16301f; --warn:#f0c55a; --warn-bg:#352b10;
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:14px;line-height:1.5}
+.wrap{max-width:none;margin:0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 64px;display:grid;gap:28px}
+h1,h2,h3{text-wrap:balance;margin:0;line-height:1.25}
+h1{font-size:1.6rem;font-weight:700}
+h2{font-size:1.2rem;font-weight:600;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:1rem;font-weight:600}
+p{margin:0}
+.prose{max-width:75ch;display:grid;gap:10px}
+.muted{color:var(--muted)}
+.mono{font-family:var(--font-mono);font-size:.86em}
+code{font-family:var(--font-mono);font-size:.86em;background:var(--surface-2);padding:1px 5px;border-radius:3px}
+.eyebrow{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.tag{display:inline-block;font-size:.72rem;font-weight:600;letter-spacing:.04em;padding:1px 7px;border-radius:10px;vertical-align:middle;white-space:nowrap}
+.t-fact{background:var(--ok-bg);color:var(--ok)}
+.t-est{background:var(--warn-bg);color:var(--warn)}
+.t-hyp{background:var(--danger-bg);color:var(--danger)}
+section{display:grid;gap:14px}
+.callout{background:var(--warn-bg);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:12px 14px;max-width:110ch}
+.callout b{color:var(--warn)}
+
+/* ---------- APEX-подібний макет ---------- */
+.app{border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--bg)}
+.app-top{background:var(--head);color:var(--head-fg);padding:10px 16px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:1.05rem}
+.app-top small{opacity:.75;font-size:.8rem}
+.app-nav{background:var(--surface-2);border-bottom:1px solid var(--line);padding:6px 16px;display:flex;gap:18px;flex-wrap:wrap;font-size:.85rem;color:var(--muted)}
+.app-nav{align-items:center}
+.dd{position:relative}
+.dd-btn{font:inherit;background:none;border:none;color:var(--fg);font-weight:600;cursor:pointer;padding:0 0 1px;border-bottom:2px solid var(--accent)}
+.dd-menu{position:absolute;top:calc(100% + 6px);left:0;z-index:5;background:var(--head);border-radius:3px;box-shadow:0 6px 18px rgba(0,0,0,.25);display:flex;flex-direction:column;min-width:220px;padding:4px 0}
+.dd-menu[hidden]{display:none!important}
+.dd-menu span{color:var(--head-fg);padding:7px 14px;font-size:.82rem;white-space:nowrap}
+.dd-menu .new{background:var(--accent);color:var(--accent-fg);font-weight:600}
+.dd-menu em{font-style:normal;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;margin-left:6px;opacity:.85}
+.crumb{font-size:.85rem}
+.menu-fig{display:inline-flex;flex-direction:column;background:var(--head);border-radius:4px;padding:4px 0;min-width:240px}
+.menu-fig span{color:var(--head-fg);padding:7px 14px;font-size:.85rem}
+.menu-fig .new{background:var(--accent);color:var(--accent-fg);font-weight:600}
+.place{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
+.place > *{min-width:0}
+.app-body{padding:14px;display:grid;gap:14px}
+.card-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:14px}
+@media (max-width:900px){.card-head{grid-template-columns:1fr}}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:12px 14px}
+.form-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.form-row label{width:90px;text-align:right;color:var(--muted);font-size:.85rem}
+input[type=text],input[type=number],select,textarea{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:5px 8px}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px 18px}
+.kv div{display:flex;flex-direction:column}
+.kv span{font-size:.75rem;color:var(--muted)}
+.kv b{font-variant-numeric:tabular-nums}
+.panels{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:1150px){.panels{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:4px;min-width:0}
+.panel-h{padding:9px 12px;color:#fff;font-weight:600;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center}
+.panel-h.active{background:var(--active)}
+.panel-h.pending{background:var(--pending)}
+:root[data-theme="dark"] .panel-h, :root:not([data-theme="light"]) .panel-h{color:#fff}
+.panel-h small{font-weight:400;opacity:.9}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line)}
+.toolbar .sp{flex:1}
+.btn{font:inherit;font-size:.85rem;border:1px solid var(--line);background:var(--surface-2);color:var(--fg);padding:5px 11px;border-radius:3px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.btn.danger{background:var(--danger);color:#fff;border-color:var(--danger)}
+.tbl-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.82rem}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{color:var(--accent);font-weight:600;background:var(--surface)}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+tr.out td{color:var(--muted)}
+tr.done td{color:var(--muted);text-decoration:line-through}
+tr.sel td{background:var(--surface-2)}
+tfoot td{font-weight:600}
+.ic{border:none;background:none;cursor:pointer;color:var(--accent);padding:2px 4px;font-size:1rem;line-height:1}
+.ic[disabled]{color:var(--line);cursor:not-allowed}
+.pill{font-size:.7rem;padding:1px 6px;border-radius:9px;background:var(--surface-2);color:var(--muted)}
+.pill.man{background:var(--warn-bg);color:var(--warn);font-weight:600}
+.lock-hint{font-size:.78rem;color:var(--danger);font-weight:600}
+.crit{background:var(--danger-bg);color:var(--fg);border:2px solid var(--danger);border-radius:6px;padding:12px 14px;max-width:110ch;display:grid;gap:6px}
+.crit b.h{color:var(--danger);font-size:1rem}
+.legend{font-size:.78rem;color:var(--muted);padding:8px 12px}
+.log{background:var(--surface);border:1px solid var(--line);border-radius:4px}
+.log .panel-h{background:var(--head);color:var(--head-fg)}
+
+/* модальне вікно */
+.modal-bg{position:fixed;inset:0;background:rgba(10,15,22,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
+.modal{background:var(--surface);color:var(--fg);border-radius:6px;width:min(520px,100%);border:1px solid var(--line);box-shadow:0 12px 40px rgba(0,0,0,.3)}
+.modal header{padding:12px 16px;border-bottom:1px solid var(--line);font-weight:600}
+.modal .mb{padding:14px 16px;display:grid;gap:10px}
+.modal footer{padding:10px 16px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.field{display:grid;gap:4px}
+.field label{font-size:.8rem;color:var(--muted)}
+.err{color:var(--danger);font-size:.8rem}
+.summary{background:var(--surface-2);border-radius:4px;padding:8px 10px;font-size:.85rem;display:grid;gap:2px}
+.toast{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--ok);color:#fff;padding:10px 14px;border-radius:4px;z-index:30;max-width:360px}
+
+/* документні таблиці */
+.doc-tbl{background:var(--surface);border:1px solid var(--line);border-radius:4px}
+.doc-tbl td,.doc-tbl th{white-space:normal;vertical-align:top}
+.doc-tbl th{color:var(--fg);background:var(--surface-2)}
+pre{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:12px;overflow-x:auto;font-family:var(--font-mono);font-size:.8rem;line-height:1.45;margin:0}
+ol.q{margin:0;padding-left:22px;display:grid;gap:8px;max-width:110ch}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="prose" style="max-width:110ch">
+  <span class="eyebrow">Маркетинг і реклама · розділ ДК · макет v0.5</span>
+  <h1>Списання бонусів ДК</h1>
+  <p>Маркетолог сам списує бонуси, які касир отримав за чужу покупку, і скасовує очікувані нарахування, без участі розробника. Нижче: інтерактивний макет екрана, логіка роботи і бізнес-правила.</p>
+  <p class="muted">Усі дані в макеті вигадані. Кнопки працюють лише на цій сторінці й нічого ніде не змінюють.</p>
+</header>
+
+<section>
+  <h2>1. Макет екрана</h2>
+  <p class="muted" style="max-width:110ch">Натисніть ✎ або поставте галочки і спробуйте списати. Після оновлення сторінки приклад повертається до початкового стану.</p>
+
+  <div class="app" id="app">
+    <div class="app-top"><span>Маркетинг і реклама</span><small>MARKETER_1 · Log Out</small></div>
+    <div class="app-nav">
+      <span>Головна</span><span>Пакети ▾</span>
+      <span class="dd"><button type="button" class="dd-btn on" id="dd-dk" aria-expanded="false" aria-controls="dd-menu">ДК ▾</button>
+        <span class="dd-menu" id="dd-menu" hidden>
+          <span>Блокування бонусів</span>
+          <span>Призначення ДК ТТ</span>
+          <span>Нарахування бонусів</span>
+          <span class="new">Списання бонусів <em>нове</em></span>
+        </span>
+      </span>
+      <span>Автодзвон ▾</span><span>Продажі ▾</span><span>Акції</span><span>Аналіз бонусів ▾</span><span>Ефективність акцій</span><span>Довідники ▾</span>
+    </div>
+    <div class="app-body">
+      <div class="crumb">ДК › <b>Списання бонусів</b> <span class="muted">(натисніть «ДК ▾» вище, щоб побачити меню)</span></div>
+
+      <div class="card-head">
+        <div class="box">
+          <div class="form-row"><label for="f-dc">Диск. карта</label><input id="f-dc" type="text" value="0000000000001" size="16"><button class="btn primary" type="button">Знайти</button></div>
+          <div class="form-row"><label for="f-ph">Телефон</label><input id="f-ph" type="text" placeholder="380…" size="16"></div>
+          <div class="form-row"><label for="f-d1">Період</label><input id="f-d1" type="text" value="01.10.2026" size="10"> — <input id="f-d2" type="text" value="20.10.2026" size="10"></div>
+        </div>
+        <div class="box kv">
+          <div><span>Власник</span><b>Касир, Магазин №1 (службова ДК)</b></div>
+          <div><span>Баланс</span><b id="kv-bal">—</b></div>
+          <div><span>Очікує нарахування</span><b id="kv-wait">—</b></div>
+          <div><span>Статус</span><b>Карта активна</b></div>
+          <div><span>Ознака співробітника</span><b>Так</b></div>
+          <div><span>Списано вручну за період</span><b id="kv-wo">0</b></div>
+        </div>
+      </div>
+
+      <div class="panels">
+        <div class="panel" id="p-active"></div>
+        <div class="panel" id="p-pending"></div>
+      </div>
+
+      <div class="log">
+        <div class="panel-h"><span>Журнал ручних списань по карті</span><small>хто, коли, скільки, по якій акції, причина</small></div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Дата і час</th><th>Користувач</th><th>Режим</th><th>Звіт</th><th>Акція</th><th>ТТ</th><th>Чек</th><th class="n">Сума</th><th>Причина</th></tr></thead>
+          <tbody id="log-body"><tr><td colspan="9" class="muted">Списань ще не було.</td></tr></tbody>
+        </table></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>1.1 Розміщення</h2>
+  <div class="place">
+    <div class="menu-fig" aria-label="Меню ДК">
+      <span>Блокування бонусів</span>
+      <span>Призначення ДК ТТ</span>
+      <span>Нарахування бонусів</span>
+      <span class="new">Списання бонусів</span>
+    </div>
+    <div class="prose" style="flex:1">
+      <p>Новий пункт «Списання бонусів» у меню «ДК», одразу після «Нарахування бонусів».</p>
+      <p>Доступ до пункту меню, сторінки і самого списання мають лише визначені користувачі маркетингу.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>2. Як працює екран</h2>
+  <div class="crit" role="note">
+    <b class="h">❗ КРИТИЧНО (BR-09): кнопка «ВСІ» блокується, якщо є хоча б одна галочка</b>
+    <p>Якщо в панелі поставлено хоча б один чекбокс, кнопка «Списати всі бонуси» (ліва панель) або «Скасувати всі очікувані» (права панель) залишається на екрані, але стає <b>неактивною</b>. Поруч з'являється підказка «заблоковано, бо вибрано рядки». Кнопка знову активна лише тоді, коли зняті всі галочки в цій панелі.</p>
+    <p>Мета: вибрали 5 нарахувань з 10 — списати можна тільки ці 5. Випадкове натискання «всі» списало б усі 10, а відкату списання в процесі немає.</p>
+  </div>
+  <div class="tbl-wrap"><table class="doc-tbl">
+    <thead><tr><th style="width:170px">Елемент</th><th>Ліва панель «Нарахування та рух»</th><th>Права панель «Очікує нарахування»</th></tr></thead>
+    <tbody>
+      <tr><td>Що показує</td><td>Рухи (нарахування, списання при продажу, згоряння, ручні списання) <b>лише по тих акціях, де ще є залишок бонусів</b> (BR-10). Якщо залишку немає ні по одній акції — панель порожня з текстом «Немає акцій із залишком бонусів». Дія доступна тільки для рядків-нарахувань із залишком &gt; 0.</td><td>Нарахування, у яких дата початку дії акції ще не настала.</td></tr>
+      <tr><td>Початок / кінець дії</td><td colspan="2">Заповнюються лише для нарахувань. Для списань (продаж, згоряння, ручне) — «—».</td></tr>
+      <tr><td>Колонки (однакові)</td><td colspan="2">✎ · ☐ · Дата · ТТ · Чек · <b>Акція</b> · Нараховано · Списано · <b>Залишок</b> · Тип · <b>Спосіб</b> · <b>Користувач</b> · Початок дії · Кінець дії</td></tr>
+      <tr><td>Кнопка 1</td><td>«Списати всі бонуси» — списує залишок кожного нарахування, по кожній акції окремим рядком.</td><td>«Скасувати всі очікувані» — те саме для очікуваних.</td></tr>
+      <tr><td>Кнопка 2</td><td>«Списати вибрані (N)» — активна, коли є хоча б одна галочка. Списує повний залишок вибраних рядків.</td><td>«Скасувати вибрані (N)».</td></tr>
+      <tr><td>Олівець ✎</td><td colspan="2">Одне вікно: акція, чек, нараховано, вже списано, доступно, баланс до і після. Поля: «Кількість бонусів» (1…доступно), «Причина» (обов'язково), «Коментар». Кнопка «Списати N бонусів» / «Скасувати N бонусів» активна, коли сума коректна і причину обрано. Окремого підтвердження немає.</td></tr>
+      <tr><td>Підтвердження</td><td colspan="2">Для кнопок «Всі» і «Вибрані» — вікно з підсумком (скільки рядків, скільки бонусів, баланс до і після), обов'язкова причина зі списку і необов'язковий коментар. Без причини кнопка неактивна.</td></tr>
+      <tr><td>Після операції</td><td colspan="2">Обидві панелі і шапка (баланс, очікує) оновлюються. Ручне списання з'являється прямо в основному звіті з позначкою «Ручне» і логіном, а також у журналі внизу.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>2.1 Колонки «Спосіб» і «Користувач»</h2>
+  <div class="tbl-wrap"><table class="doc-tbl">
+    <thead><tr><th style="width:320px">Операція</th><th style="width:90px">Спосіб</th><th>Користувач</th></tr></thead>
+    <tbody>
+      <tr><td>Списання або скасування з цього екрана</td><td>Ручне</td><td>Логін того, хто списав</td></tr>
+      <tr><td>Ручне нарахування бонусів</td><td>Ручне</td><td>Логін того, хто нарахував</td></tr>
+      <tr><td>Продаж / повернення на касі</td><td>Авто</td><td>«Система» (ТТ видно в колонці «ТТ»)</td></tr>
+      <tr><td>Згоряння бонусів після кінця дії</td><td>Авто</td><td>«Система»</td></tr>
+      <tr><td>Нарахування по продажах і акціях</td><td>Авто</td><td>«Система»</td></tr>
+    </tbody>
+  </table></div>
+  <p class="muted" style="max-width:110ch">Для автоматичних операцій пишемо «Система», а не порожнє поле: порожнє поле не відрізнити від «логін загубився».</p>
+</section>
+
+<section>
+  <h2>3. Бізнес-правила і валідації</h2>
+  <div class="tbl-wrap"><table class="doc-tbl">
+    <thead><tr><th style="width:70px">Код</th><th>Правило</th></tr></thead>
+    <tbody>
+      <tr><td>BR-01</td><td>Залишок = нараховано по (картка, акція) мінус усе вже списане по тій самій парі: продажі, згоряння, ручні списання. Списати більше залишку не можна — ні олівцем, ні масовими кнопками.</td></tr>
+      <tr><td>BR-02</td><td>Сума — ціле число &gt; 0. Помилки: «Введіть число від 1 до 1 500», «Доступно лише 1 500 бонусів по цій акції».</td></tr>
+      <tr><td>BR-03</td><td>Перевірка залишку повторюється на сервері в момент запису, з блокуванням картки. Захист від подвійного кліку і від того, що касир витрачає бонуси в цю ж хвилину.</td></tr>
+      <tr><td>BR-04</td><td>Масове списання — одна операція: або списались усі рядки, або жоден.</td></tr>
+      <tr><td>BR-05</td><td>Кожне списання — окремий запис руху бонусів з тією самою акцією, ТТ і чеком, що й нарахування. Так у звіті видно, по якій акції і по якому чеку списано.</td></tr>
+      <tr><td>BR-06</td><td>Хто, коли, причина, коментар, режим (усі / вибрані / часткове) і звіт (активні / очікувані) зберігаються в окремому журналі. Колонка «Користувач» в основному звіті береться з цього журналу.</td></tr>
+      <tr><td>BR-07</td><td>Доступ до сторінки — лише для визначених користувачів маркетингу.</td></tr>
+      <tr><td>BR-08</td><td>Скасування очікуваного нарахування зменшує «Очікує нарахування» і не впливає на поточний баланс.</td></tr>
+      <tr><td><b style="color:var(--danger)">❗ BR-09</b></td><td><b>Якщо в панелі вибрано хоча б один рядок, кнопка «Списати всі бонуси» / «Скасувати всі очікувані» неактивна.</b> Правило діє окремо для кожної панелі і дублюється перевіркою на сервері.</td></tr>
+      <tr><td>BR-10</td><td>У панелях показуються лише акції із залишком &gt; 0. По такій акції показується весь її рух (нарахування і списання), щоб було видно, звідки залишок. Акції, використані, списані чи згорілі повністю, ховаються; під таблицею — «Приховано акцій без залишку: N». Залишок рахується за весь час, а не лише за вибраний період. Історія ручних списань по закритих акціях лишається в журналі внизу.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+</div>
+
+<div id="modal-root"></div>
+<div id="toast-root"></div>
+<script>
+(function(){
+  var TODAY = new Date(2026,9,20);
+  var USER = 'MARKETER_1';
+  var fmt = function(n){ return n.toLocaleString('uk-UA').replace(/ /g,' '); };
+  var parseD = function(s){ var p=s.split('.'); return new Date(+p[2],+p[1]-1,+p[0]); };
+  var nowStr = function(){ return '20.10.2026 ' + new Date().toTimeString().slice(0,5); };
+
+  // Приклад даних. kind: accr = нарахування, out = рух-списання
+  var rows = [
+    {id:1, kind:'accr', dat:'09.10.2026', tt:'—',  chk:'—',     act:1591, inA:1000, type:'Начисление бонусов по продажам'},
+    {id:2, kind:'accr', dat:'14.10.2026', tt:'Магазин №1', chk:'55102', act:1602, inA:3000, type:'Начисление бонусов по продажам'},
+    {id:3, kind:'out',  dat:'15.10.2026', tt:'Магазин №1', chk:'55240', act:1602, outA:500, type:'Продажа'},
+    {id:9, kind:'out', manual:true, user:'MARKETER_2', dat:'19.10.2026', tt:'Магазин №1', chk:'55102', act:1602, outA:1000, type:'Списание бонусов ручной режим'},
+    {id:6, kind:'accr', dat:'18.10.2026', tt:'Магазин №1', chk:'55871', act:1620, inA:1500, type:'Начисление бонусов по продажам'}
+  ];
+  var acts = {
+    1591:{name:'1000Бонусів за ДН FW`26', s:'25.08.2026', e:'30.04.2027'},
+    1584:{name:'1500 Бонусів за 1000грн НК', s:'01.10.2026', e:'31.10.2026'},
+    1602:{name:'1500 Бонусів за 1000грн 01.10.2026', s:'01.10.2026', e:'31.12.2026'},
+    1610:{name:'Бонуси за акційний товар', s:'10.10.2026', e:'30.11.2026'},
+    1620:{name:'1500 Бонусів за 1000грн 01.11.2026', s:'01.11.2026', e:'31.12.2026'}
+  };
+  var scopeOf = function(actId){ return parseD(acts[actId].s) > TODAY ? 'PENDING' : 'ACTIVE'; };
+  var logRows = [
+    {at:'19.10.2026 15:42', user:'MARKETER_2', mode:'Часткове', scope:'Активні', act:1602, chk:'55102', tt:'Магазин №1', amount:1000, reason:'Бонуси касира за покупку клієнта', batch:0}
+  ];
+  var nextId = 100, batch = 1;
+  var selected = {ACTIVE:{}, PENDING:{}};
+
+  // Залишок по рядку-нарахуванню: пул акції розподіляється FIFO по нарахуваннях
+  function availability(){
+    var res = {};
+    Object.keys(acts).forEach(function(a){
+      var accr = rows.filter(function(r){return r.kind==='accr' && r.act==+a;});
+      var outSum = rows.filter(function(r){return r.kind==='out' && r.act==+a;}).reduce(function(s,r){return s+r.outA;},0);
+      accr.forEach(function(r){
+        var take = Math.min(outSum, r.inA); outSum -= take;
+        res[r.id] = {spent:take, avail:r.inA - take};
+      });
+    });
+    return res;
+  }
+
+  function totals(){
+    var bal=0, wait=0;
+    rows.forEach(function(r){
+      var v = r.kind==='accr' ? r.inA : -r.outA;
+      if (scopeOf(r.act)==='PENDING') wait+=v; else bal+=v;
+    });
+    return {bal:bal, wait:wait};
+  }
+
+  function methodCell(r){ return (r.manual||r.manualHist) ? '<span class="pill man">Ручне</span>' : '<span class="pill">Авто</span>'; }
+  function userCell(r){
+    if (r.manual) return '<b>'+r.user+'</b>';
+    if (r.manualHist) return '<span class="muted" title="Запис зроблено до впровадження журналу">не зафіксовано</span>';
+    return '<span class="muted">'+(r.sys||'Система')+'</span>';
+  }
+  function renderPanel(scope){
+    var el = document.getElementById(scope==='ACTIVE'?'p-active':'p-pending');
+    var av = availability();
+    // залишок по акції (картка + акція); акції з нульовим залишком не показуємо
+    var pool = {};
+    rows.forEach(function(r){ if (r.kind==='accr') pool[r.act] = (pool[r.act]||0) + av[r.id].avail; });
+    var all = rows.filter(function(r){ return scopeOf(r.act)===scope && (scope==='ACTIVE' || r.kind==='accr' || r.manual); });
+    var list = all.filter(function(r){ return pool[r.act] > 0; });
+    var hiddenActs = Object.keys(all.reduce(function(m,r){ if (!(pool[r.act] > 0)) m[r.act]=1; return m; },{})).length;
+    var sel = selected[scope];
+    var selCount = Object.keys(sel).filter(function(k){return sel[k];}).length;
+    var anyAvail = list.some(function(r){return r.kind==='accr' && av[r.id].avail>0;});
+    var verbAll = scope==='ACTIVE' ? 'Списати всі бонуси' : 'Скасувати всі очікувані';
+    var verbSel = scope==='ACTIVE' ? 'Списати вибрані' : 'Скасувати вибрані';
+    var sumIn=0,sumOut=0,sumAv=0;
+    var body = list.map(function(r){
+      var a = acts[r.act];
+      if (r.kind==='accr'){
+        var x = av[r.id]; sumIn+=r.inA; sumAv+=x.avail;
+        var can = x.avail>0;
+        return '<tr class="'+(sel[r.id]?'sel':'')+(can?'':' done')+'">'+
+          '<td><button class="ic" type="button" data-edit="'+r.id+'" title="Списати частково" aria-label="Списати частково" '+(can?'':'disabled')+'>✎</button></td>'+
+          '<td><input type="checkbox" id="cb-'+r.id+'" data-cb="'+r.id+'" data-scope="'+scope+'" '+(sel[r.id]?'checked':'')+' '+(can?'':'disabled')+' aria-label="Вибрати"></td>'+
+          '<td>'+r.dat+'</td><td>'+r.tt+'</td><td class="mono">'+r.chk+'</td>'+
+          '<td title="ID акції '+r.act+'">'+a.name+'</td>'+
+          '<td class="n">'+fmt(r.inA)+'</td><td class="n">'+fmt(x.spent)+'</td><td class="n"><b>'+fmt(x.avail)+'</b></td>'+
+          '<td>'+r.type+(can?'':' <span class="pill">закрито</span>')+'</td><td>'+methodCell(r)+'</td><td>'+userCell(r)+'</td><td>'+a.s+'</td><td>'+a.e+'</td></tr>';
+      } else {
+        sumOut+=r.outA;
+        return '<tr class="out"><td></td><td></td><td>'+r.dat+'</td><td>'+r.tt+'</td><td class="mono">'+r.chk+'</td>'+
+          '<td>'+a.name+'</td><td class="n">0</td><td class="n">'+fmt(r.outA)+'</td><td class="n"></td>'+
+          '<td>'+r.type+'</td><td>'+methodCell(r)+'</td><td>'+userCell(r)+'</td><td>—</td><td>—</td></tr>';
+      }
+    }).join('');
+    if (!list.length) body = '<tr><td colspan="14" class="muted">Немає акцій із залишком бонусів. Списувати нічого.</td></tr>';
+    el.innerHTML =
+      '<div class="panel-h '+(scope==='ACTIVE'?'active':'pending')+'"><span>'+(scope==='ACTIVE'?'Нарахування та рух бонусів':'Очікує нарахування')+'</span><small>'+(scope==='ACTIVE'?'дата початку дії настала':'дата початку дії ще не настала')+'</small></div>'+
+      '<div class="toolbar">'+
+        '<button class="btn danger" type="button" data-all="'+scope+'" '+((anyAvail && !selCount)?'':'disabled')+' title="'+(selCount?'Недоступно: є вибрані рядки. Зніміть усі галочки або використайте «'+verbSel+'»':'')+'">'+verbAll+'</button>'+
+        '<button class="btn" type="button" data-sel="'+scope+'" '+(selCount?'':'disabled')+'>'+verbSel+' ('+selCount+')</button>'+
+        (selCount ? '<span class="lock-hint">«'+verbAll+'» заблоковано, бо вибрано рядки</span>' : '')+
+        '<span class="sp"></span><span class="muted" style="font-size:.8rem">Доступно: <b>'+fmt(sumAv)+'</b></span>'+
+      '</div>'+
+      '<div class="tbl-wrap"><table><thead><tr><th></th><th><input type="checkbox" id="cball-'+scope+'" data-cball="'+scope+'" aria-label="Вибрати всі"></th><th>Дата</th><th>ТТ</th><th>Чек</th><th>Акція</th><th class="n">Нараховано</th><th class="n">Списано</th><th class="n">Залишок</th><th>Тип</th><th>Спосіб</th><th>Користувач</th><th>Початок дії</th><th>Кінець дії</th></tr></thead>'+
+      '<tbody>'+body+'</tbody>'+
+      '<tfoot><tr><td colspan="6">Разом</td><td class="n">'+fmt(sumIn)+'</td><td class="n">'+fmt(sumOut + list.filter(function(r){return r.kind==='accr';}).reduce(function(s,r){return s+av[r.id].spent;},0) - sumOut)+'</td><td class="n">'+fmt(sumAv)+'</td><td colspan="5"></td></tr></tfoot></table></div>'+
+      '<div class="legend">Сірим — рухи списання, без дій. Закреслено — нарахування без залишку. «Ручне» — операція людини, в колонці «Користувач» її логін. «Авто» — каса або система. Наведіть на акцію, щоб побачити ID.'+(hiddenActs ? ' <b>Приховано акцій без залишку: '+hiddenActs+'.</b>' : '')+'</div>';
+  }
+
+  function render(){
+    renderPanel('ACTIVE'); renderPanel('PENDING');
+    var t = totals();
+    document.getElementById('kv-bal').textContent = fmt(t.bal)+' бонусів';
+    document.getElementById('kv-wait').textContent = fmt(t.wait)+' бонусів';
+    document.getElementById('kv-wo').textContent = fmt(logRows.reduce(function(s,l){return s+l.amount;},0));
+    var lb = document.getElementById('log-body');
+    lb.innerHTML = logRows.length ? logRows.slice().reverse().map(function(l){
+      return '<tr><td>'+l.at+'</td><td>'+l.user+'</td><td>'+l.mode+'</td><td>'+l.scope+'</td><td>'+acts[l.act].name+'</td><td>'+l.tt+'</td><td class="mono">'+l.chk+'</td><td class="n">'+fmt(l.amount)+'</td><td>'+l.reason+'</td></tr>';
+    }).join('') : '<tr><td colspan="9" class="muted">Списань ще не було.</td></tr>';
+  }
+
+  // Операція: items = [{row, amount}]
+  function confirmOp(scope, mode, items){
+    var t = totals();
+    var total = items.reduce(function(s,i){return s+i.amount;},0);
+    var isP = scope==='PENDING';
+    var actCount = Object.keys(items.reduce(function(m,i){m[i.row.act]=1;return m;},{})).length;
+    var root = document.getElementById('modal-root');
+    root.innerHTML =
+      '<div class="modal-bg"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="cm-h">'+
+      '<header id="cm-h">'+(isP?'Скасувати очікувані нарахування':'Списати бонуси')+'</header><div class="mb">'+
+      '<div class="summary"><span>Рядків: <b>'+items.length+'</b> · акцій: <b>'+actCount+'</b></span>'+
+      '<span>Сума: <b>'+fmt(total)+'</b> бонусів</span>'+
+      (isP ? '<span>Очікує: '+fmt(t.wait)+' → <b>'+fmt(t.wait-total)+'</b></span>' : '<span>Баланс: '+fmt(t.bal)+' → <b>'+fmt(t.bal-total)+'</b></span>')+'</div>'+
+      '<div class="field"><label for="cm-reason">Причина *</label><select id="cm-reason"><option value="">— оберіть —</option><option>Бонуси касира за покупку клієнта</option><option>Помилкове нарахування</option><option>Інше</option></select></div>'+
+      '<div class="field"><label for="cm-comment">Коментар</label><textarea id="cm-comment" rows="2"></textarea></div>'+
+      '</div><footer><button class="btn" type="button" id="cm-cancel">Відміна</button><button class="btn danger" type="button" id="cm-ok" disabled>'+(isP?'Скасувати ':'Списати ')+fmt(total)+' бонусів</button></footer></div></div>';
+    var ok = document.getElementById('cm-ok'), rs = document.getElementById('cm-reason');
+    rs.addEventListener('change', function(){ ok.disabled = !rs.value; });
+    document.getElementById('cm-cancel').onclick = function(){ root.innerHTML=''; };
+    ok.onclick = function(){ commit(scope, mode, items, rs.value); };
+    rs.focus();
+  }
+
+  var REASONS = '<option value="">— оберіть —</option><option>Бонуси касира за покупку клієнта</option><option>Помилкове нарахування</option><option>Інше</option>';
+
+  // Запис списання (спільний для всіх трьох способів)
+  function commit(scope, mode, items, reason){
+    var isP = scope==='PENDING';
+    var total = items.reduce(function(s,i){return s+i.amount;},0);
+    var actCount = Object.keys(items.reduce(function(m,i){m[i.row.act]=1;return m;},{})).length;
+    var modeLbl = {ALL:'Усі', SELECTED:'Вибрані', PARTIAL:'Часткове'}[mode];
+    items.forEach(function(i){
+      rows.push({id:nextId++, kind:'out', manual:true, dat:'20.10.2026', tt:i.row.tt, chk:i.row.chk, act:i.row.act, outA:i.amount, user:USER, type:'Списание бонусов ручной режим'});
+      logRows.push({at:nowStr(), user:USER, mode:modeLbl, scope:isP?'Очікує':'Активні', act:i.row.act, chk:i.row.chk, tt:i.row.tt, amount:i.amount, reason:reason, batch:batch});
+    });
+    batch++;
+    selected[scope] = {};
+    document.getElementById('modal-root').innerHTML='';
+    render();
+    toast((isP?'Скасовано ':'Списано ')+fmt(total)+' бонусів по '+actCount+' акц.');
+  }
+
+  // Олівець: одне вікно — кількість + причина + коментар
+  function editDialog(id){
+    var r = rows.filter(function(x){return x.id===id;})[0];
+    var x = availability()[id], a = acts[r.act], scope = scopeOf(r.act), isP = scope==='PENDING';
+    var t = totals(), base = isP ? t.wait : t.bal;
+    var root = document.getElementById('modal-root');
+    root.innerHTML =
+      '<div class="modal-bg"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="ed-h">'+
+      '<header id="ed-h">'+(isP?'Часткове скасування нарахування':'Часткове списання бонусів')+'</header><div class="mb">'+
+      '<div class="summary"><span>Акція: <b>'+a.name+'</b></span><span>Чек '+r.chk+' · '+r.tt+' · '+r.dat+'</span>'+
+      '<span>Нараховано: '+fmt(r.inA)+' · вже списано: '+fmt(x.spent)+' · <b>доступно: '+fmt(x.avail)+'</b></span>'+
+      '<span id="ed-bal"></span></div>'+
+      '<div class="field"><label for="ed-amt">Кількість бонусів для '+(isP?'скасування':'списання')+' *</label><input id="ed-amt" type="number" min="1" max="'+x.avail+'" step="1" value="'+x.avail+'"><span class="err" id="ed-err"></span></div>'+
+      '<div class="field"><label for="ed-reason">Причина *</label><select id="ed-reason">'+REASONS+'</select></div>'+
+      '<div class="field"><label for="ed-comment">Коментар</label><textarea id="ed-comment" rows="2"></textarea></div>'+
+      '</div><footer><button class="btn" type="button" id="ed-cancel">Відміна</button><button class="btn danger" type="button" id="ed-ok" disabled>'+(isP?'Скасувати':'Списати')+'</button></footer></div></div>';
+    var inp = document.getElementById('ed-amt'), err = document.getElementById('ed-err'), ok = document.getElementById('ed-ok'), rs = document.getElementById('ed-reason'), bl = document.getElementById('ed-bal');
+    function check(){
+      var v = Number(inp.value);
+      var msg = '';
+      if (!inp.value || !Number.isInteger(v) || v < 1) msg = 'Введіть ціле число від 1 до '+fmt(x.avail)+'.';
+      else if (v > x.avail) msg = 'Доступно лише '+fmt(x.avail)+' бонусів по цьому нарахуванню.';
+      err.textContent = msg;
+      bl.innerHTML = msg ? '' : (isP?'Очікує: ':'Баланс: ')+fmt(base)+' → <b>'+fmt(base - v)+'</b>';
+      ok.disabled = !!msg || !rs.value;
+      ok.textContent = (isP?'Скасувати ':'Списати ')+(msg?'':fmt(v)+' бонусів');
+      return !msg && !!rs.value;
+    }
+    inp.addEventListener('input', check); rs.addEventListener('change', check); check();
+    document.getElementById('ed-cancel').onclick = function(){ root.innerHTML=''; };
+    ok.onclick = function(){ if(!check()) return; commit(scope,'PARTIAL',[{row:r, amount:Number(inp.value)}], rs.value); };
+    inp.focus(); inp.select();
+  }
+
+  function toast(msg){
+    var t = document.getElementById('toast-root');
+    t.innerHTML = '<div class="toast" role="status">'+msg+'</div>';
+    setTimeout(function(){ t.innerHTML=''; }, 3500);
+  }
+
+  document.getElementById('app').addEventListener('click', function(e){
+    var b = e.target.closest('button');
+    if (b){
+      if (b.dataset.edit) editDialog(+b.dataset.edit);
+      if (b.dataset.all){
+        var sc = b.dataset.all, av = availability();
+        // дублююча перевірка (як серверна валідація): при вибраних рядках "всі" не виконуємо
+        if (Object.keys(selected[sc]).some(function(k){return selected[sc][k];})) return;
+        var items = rows.filter(function(r){return r.kind==='accr' && scopeOf(r.act)===sc && av[r.id].avail>0;}).map(function(r){return {row:r, amount:av[r.id].avail};});
+        if (items.length) confirmOp(sc,'ALL',items);
+      }
+      if (b.dataset.sel){
+        var sc2 = b.dataset.sel, av2 = availability();
+        var items2 = rows.filter(function(r){return selected[sc2][r.id];}).map(function(r){return {row:r, amount:av2[r.id].avail};}).filter(function(i){return i.amount>0;});
+        if (items2.length) confirmOp(sc2,'SELECTED',items2);
+      }
+    }
+  });
+  document.getElementById('app').addEventListener('change', function(e){
+    var c = e.target;
+    if (c.dataset.cb){ selected[c.dataset.scope][+c.dataset.cb] = c.checked; render(); }
+    if (c.dataset.cball){
+      var sc = c.dataset.cball, av = availability();
+      rows.forEach(function(r){ if (r.kind==='accr' && scopeOf(r.act)===sc && av[r.id].avail>0) selected[sc][r.id] = c.checked; });
+      render();
+      var el = document.getElementById('cball-'+sc); if (el) el.checked = c.checked;
+    }
+  });
+  var ddBtn = document.getElementById('dd-dk'), ddMenu = document.getElementById('dd-menu');
+  ddBtn.addEventListener('click', function(e){ e.stopPropagation(); ddMenu.hidden = !ddMenu.hidden; ddBtn.setAttribute('aria-expanded', String(!ddMenu.hidden)); });
+  document.addEventListener('click', function(e){ if (!ddMenu.hidden && !e.target.closest('.dd')) { ddMenu.hidden = true; ddBtn.setAttribute('aria-expanded','false'); } });
+  document.addEventListener('keydown', function(e){ if (e.key==='Escape') { document.getElementById('modal-root').innerHTML=''; ddMenu.hidden = true; } });
+  render();
+})();
+</script>
+</body>
+</html>
